@@ -1,45 +1,249 @@
 package com.variacode.coinmarketcap;
 
+import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.net.HttpURLConnection;
 import java.util.List;
+import java.net.URL;
 
 /**
  *
  * @author miguel@variacode.com
  */
 public class CoinMarketCap {
-    
+
+    private final Gson gson = new Gson();
+
     //TODO: control 10 calls per minute
     //TODO: tests
-
+    //TODO: last updated to date
     public enum CurrencyConvert {
         AUD, BRL, CAD, CHF, CNY, EUR, GBP, HKD, IDR, INR, JPY, KRW, MXN, RUB
     }
 
     public class Ticker {
 
+        @SerializedName("id")
+        @Expose
+        private String id;
+        @SerializedName("name")
+        @Expose
+        private String name;
+        @SerializedName("symbol")
+        @Expose
+        private String symbol;
+        @SerializedName("rank")
+        @Expose
+        private Integer rank;
+        @SerializedName("price_usd")
+        @Expose
+        private BigDecimal priceUsd;
+        @SerializedName("price_btc")
+        @Expose
+        private BigDecimal priceBtc;
+        @SerializedName("24h_volume_usd")
+        @Expose
+        private BigDecimal _24hVolumeUsd;
+        @SerializedName("market_cap_usd")
+        @Expose
+        private BigDecimal marketCapUsd;
+        @SerializedName("available_supply")
+        @Expose
+        private BigDecimal availableSupply;
+        @SerializedName("total_supply")
+        @Expose
+        private BigDecimal totalSupply;
+        @SerializedName("percent_change_1h")
+        @Expose
+        private BigDecimal percentChange1h;
+        @SerializedName("percent_change_24h")
+        @Expose
+        private BigDecimal percentChange24h;
+        @SerializedName("percent_change_7d")
+        @Expose
+        private BigDecimal percentChange7d;
+        @SerializedName("last_updated")
+        @Expose
+        private Long lastUpdated;
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getSymbol() {
+            return symbol;
+        }
+
+        public void setSymbol(String symbol) {
+            this.symbol = symbol;
+        }
+
+        public Integer getRank() {
+            return rank;
+        }
+
+        public void setRank(Integer rank) {
+            this.rank = rank;
+        }
+
+        public BigDecimal getPriceUsd() {
+            return priceUsd;
+        }
+
+        public void setPriceUsd(BigDecimal priceUsd) {
+            this.priceUsd = priceUsd;
+        }
+
+        public BigDecimal getPriceBtc() {
+            return priceBtc;
+        }
+
+        public void setPriceBtc(BigDecimal priceBtc) {
+            this.priceBtc = priceBtc;
+        }
+
+        public BigDecimal get24hVolumeUsd() {
+            return _24hVolumeUsd;
+        }
+
+        public void set24hVolumeUsd(BigDecimal _24hVolumeUsd) {
+            this._24hVolumeUsd = _24hVolumeUsd;
+        }
+
+        public BigDecimal getMarketCapUsd() {
+            return marketCapUsd;
+        }
+
+        public void setMarketCapUsd(BigDecimal marketCapUsd) {
+            this.marketCapUsd = marketCapUsd;
+        }
+
+        public BigDecimal getAvailableSupply() {
+            return availableSupply;
+        }
+
+        public void setAvailableSupply(BigDecimal availableSupply) {
+            this.availableSupply = availableSupply;
+        }
+
+        public BigDecimal getTotalSupply() {
+            return totalSupply;
+        }
+
+        public void setTotalSupply(BigDecimal totalSupply) {
+            this.totalSupply = totalSupply;
+        }
+
+        public BigDecimal getPercentChange1h() {
+            return percentChange1h;
+        }
+
+        public void setPercentChange1h(BigDecimal percentChange1h) {
+            this.percentChange1h = percentChange1h;
+        }
+
+        public BigDecimal getPercentChange24h() {
+            return percentChange24h;
+        }
+
+        public void setPercentChange24h(BigDecimal percentChange24h) {
+            this.percentChange24h = percentChange24h;
+        }
+
+        public BigDecimal getPercentChange7d() {
+            return percentChange7d;
+        }
+
+        public void setPercentChange7d(BigDecimal percentChange7d) {
+            this.percentChange7d = percentChange7d;
+        }
+
+        public Long getLastUpdated() {
+            return lastUpdated;
+        }
+
+        public void setLastUpdated(Long lastUpdated) {
+            this.lastUpdated = lastUpdated;
+        }
     }
 
     public class Global {
 
     }
 
+    private class Error {
+
+        public String error;
+    }
+
+    private String getJsonResponse(final String url) throws CoinMarketCapException {
+        try {
+            URL obj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            con.setRequestMethod("GET");
+
+            final int responseCode = con.getResponseCode();
+
+            StringBuffer response;
+            try (BufferedReader in = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()))) {
+                String inputLine;
+                response = new StringBuffer();
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+            }
+            if (responseCode != 200) {
+                final Error error = gson.fromJson(response.toString(), Error.class);
+                throw new CoinMarketCapException(responseCode, error == null ? null : error.error);
+            }
+            return response.toString();
+        } catch (IOException ex) {
+            throw new CoinMarketCapException(ex.getCause());
+        }
+    }
+
     public class CoinMarketCapException extends Exception {
 
-        private final int status;
+        private final Integer status;
 
         public int getStatus() {
             return status;
         }
 
-        public CoinMarketCapException(int status, String message) {
+        public CoinMarketCapException(final int status, final String message) {
             super(message);
             this.status = status;
         }
 
+        public CoinMarketCapException(Throwable cause) {
+            super(cause);
+            this.status = null;
+        }
+
     }
 
-    public List<Ticker> getTicker(Integer limit, CurrencyConvert convert) throws CoinMarketCapException {
-        return null;
+    public List<Ticker> getTicker(final Integer limit, final CurrencyConvert convert) throws CoinMarketCapException {
+        return gson.fromJson(getJsonResponse("https://api.coinmarketcap.com/v1/ticker/"), new TypeToken<List<Ticker>>() {
+        }.getType());
     }
 
     public Ticker getTickerById() throws CoinMarketCapException {
