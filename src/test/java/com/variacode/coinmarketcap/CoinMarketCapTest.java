@@ -1,4 +1,3 @@
-
 package com.variacode.coinmarketcap;
 
 import java.util.List;
@@ -14,25 +13,25 @@ import static org.junit.Assert.*;
  * @author miguel@variacode.com
  */
 public class CoinMarketCapTest {
-    
+
     //To test delay capabilities
     CoinMarketCap instance = new CoinMarketCap();
-    
+
     public CoinMarketCapTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -49,7 +48,7 @@ public class CoinMarketCapTest {
         assertNotNull(result);
         assertTrue(!result.isEmpty());
     }
-    
+
     @Test
     public void testGetTickerLimit() throws Exception {
         System.out.println("getTicker Limit");
@@ -59,7 +58,7 @@ public class CoinMarketCapTest {
         assertNotNull(result);
         assertTrue(result.size() == 1);
     }
-    
+
     @Test
     public void testGetTickerConvert() throws Exception {
         System.out.println("getTicker Convert");
@@ -69,7 +68,7 @@ public class CoinMarketCapTest {
         assertNotNull(result);
         assertTrue(!result.isEmpty());
     }
-    
+
     @Test
     public void testGetTickerLimitAndConvert() throws Exception {
         System.out.println("getTicker Limit Convert");
@@ -86,12 +85,41 @@ public class CoinMarketCapTest {
     @Test
     public void testGetTickerById() throws Exception {
         System.out.println("getTickerById");
-        CoinMarketCap instance = new CoinMarketCap();
-        CoinMarketCap.Ticker expResult = null;
-        CoinMarketCap.Ticker result = instance.getTickerById();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        CoinMarketCap.Ticker result = instance.getTickerById("bitcoin", null);
+        assertNotNull(result);
+        assertNotNull(result.getId());
+    }
+
+    @Test
+    public void testGetTickerByIdConvert() throws Exception {
+        System.out.println("getTickerById Convert");
+        CoinMarketCap.Ticker result = instance.getTickerById("bitcoin", CoinMarketCap.CurrencyConvert.CNY);
+        assertNotNull(result);
+        assertNotNull(result.getId());
+    }
+
+    @Test
+    public void testGetTickerByIdError() throws Exception {
+        System.out.println("getTickerById Error");
+        try {
+            instance.getTickerById(null, CoinMarketCap.CurrencyConvert.CNY);
+        } catch (CoinMarketCap.CoinMarketCapException e) {
+            assertEquals(400, e.getStatus());
+            return;
+        }
+        fail("Should have generated exception");
+    }
+
+    @Test
+    public void testGetTickerByIdErrorApi() throws Exception {
+        System.out.println("getTickerById Error Api");
+        try {
+            instance.getTickerById("asdfasdfr43323r", null);
+        } catch (CoinMarketCap.CoinMarketCapException e) {
+            assertEquals("id not found", e.getMessage());
+            return;
+        }
+        fail("Should have generated exception");
     }
 
     /**
@@ -107,5 +135,5 @@ public class CoinMarketCapTest {
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
-    
+
 }

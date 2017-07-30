@@ -6,6 +6,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.reflect.TypeToken;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
@@ -200,7 +201,7 @@ public class CoinMarketCap {
         for (String[] p : params) {
             str = (p != null && p.length > 1 && p[1] != null && p[0] != null) ? (str == null ? ("?" + p[0] + "=" + p[1]) : (str + "&" + p[0] + "=" + p[1])) : str;
         }
-        return str;
+        return str == null ? "" : str;
     }
 
     private String getJsonResponse(final String url) throws CoinMarketCapException {
@@ -229,6 +230,8 @@ public class CoinMarketCap {
                 throw new CoinMarketCapException(responseCode, error == null ? null : error.error);
             }
             return response.toString();
+        } catch (FileNotFoundException ex) {
+            throw new CoinMarketCapException(400, "id not found");
         } catch (IOException ex) {
             throw new CoinMarketCapException(ex.getCause());
         }
@@ -255,13 +258,22 @@ public class CoinMarketCap {
     }
 
     public List<Ticker> getTicker(final Integer limit, final CurrencyConvert convert) throws CoinMarketCapException {
-        final String[][] params = {{"limit", (limit == null ? "" : limit + "")}, {"convert", (convert == null ? "" : convert + "")}};
+        final String[][] params = {{"limit", (limit == null ? null : limit + "")}, {"convert", (convert == null ? null : convert + "")}};
         return gson.fromJson(getJsonResponse("https://api.coinmarketcap.com/v1/ticker/" + getParamSuffix(params)), new TypeToken<List<Ticker>>() {
         }.getType());
     }
 
-    public Ticker getTickerById() throws CoinMarketCapException {
-        return null;
+    public Ticker getTickerById(final String id, final CurrencyConvert convert) throws CoinMarketCapException {
+        if (id == null) {
+            throw new CoinMarketCapException(400, "id null");
+        }
+        final String[][] params = {{"convert", (convert == null ? null : convert + "")}};
+        List<Ticker> l = gson.fromJson(getJsonResponse("https://api.coinmarketcap.com/v1/ticker/" + id + "/" + getParamSuffix(params)), new TypeToken<List<Ticker>>() {
+        }.getType());
+        if (l.isEmpty()) {
+            return null;
+        }
+        return l.get(0);
     }
 
     public Global getGlobal() throws CoinMarketCapException {
