@@ -15,6 +15,9 @@ import static org.junit.Assert.*;
  */
 public class CoinMarketCapTest {
     
+    //To test delay capabilities
+    CoinMarketCap instance = new CoinMarketCap();
+    
     public CoinMarketCapTest() {
     }
     
@@ -42,12 +45,39 @@ public class CoinMarketCapTest {
         System.out.println("getTicker");
         Integer limit = null;
         CoinMarketCap.CurrencyConvert convert = null;
-        CoinMarketCap instance = new CoinMarketCap();
-        List<CoinMarketCap.Ticker> expResult = null;
         List<CoinMarketCap.Ticker> result = instance.getTicker(limit, convert);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        assertNotNull(result);
+        assertTrue(!result.isEmpty());
+    }
+    
+    @Test
+    public void testGetTickerLimit() throws Exception {
+        System.out.println("getTicker Limit");
+        Integer limit = 1;
+        CoinMarketCap.CurrencyConvert convert = null;
+        List<CoinMarketCap.Ticker> result = instance.getTicker(limit, convert);
+        assertNotNull(result);
+        assertTrue(result.size() == 1);
+    }
+    
+    @Test
+    public void testGetTickerConvert() throws Exception {
+        System.out.println("getTicker Convert");
+        Integer limit = null;
+        CoinMarketCap.CurrencyConvert convert = CoinMarketCap.CurrencyConvert.EUR;
+        List<CoinMarketCap.Ticker> result = instance.getTicker(limit, convert);
+        assertNotNull(result);
+        assertTrue(!result.isEmpty());
+    }
+    
+    @Test
+    public void testGetTickerLimitAndConvert() throws Exception {
+        System.out.println("getTicker Limit Convert");
+        Integer limit = 1;
+        CoinMarketCap.CurrencyConvert convert = CoinMarketCap.CurrencyConvert.EUR;
+        List<CoinMarketCap.Ticker> result = instance.getTicker(limit, convert);
+        assertNotNull(result);
+        assertTrue(result.size() == 1);
     }
 
     /**
