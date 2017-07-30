@@ -1,5 +1,6 @@
 package com.variacode.coinmarketcap;
 
+import com.google.common.util.concurrent.RateLimiter;
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -18,11 +20,10 @@ import java.net.URL;
  */
 public class CoinMarketCap {
 
+    final RateLimiter rateLimiter = RateLimiter.create(10, 0, TimeUnit.MINUTES);
+
     private final Gson gson = new Gson();
 
-    //TODO: control 10 calls per minute
-    //TODO: tests
-    //TODO: last updated to date
     public enum CurrencyConvert {
         AUD, BRL, CAD, CHF, CNY, EUR, GBP, HKD, IDR, INR, JPY, KRW, MXN, RUB
     }
@@ -203,6 +204,10 @@ public class CoinMarketCap {
     }
 
     private String getJsonResponse(final String url) throws CoinMarketCapException {
+
+        //maybe waits globally
+        rateLimiter.acquire();
+
         try {
             URL obj = new URL(url);
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -263,52 +268,7 @@ public class CoinMarketCap {
         return null;
     }
     /*
-    Ticker
-Endpoint: /ticker/
-Method: GET
-Optional parameters:
-(int) limit - only returns the top limit results.
-(string) convert - return price, 24h volume, and market cap in terms of another currency. Valid values are:
-"AUD", "BRL", "CAD", "CHF", "CNY", "EUR", "GBP", "HKD", "IDR", "INR", "JPY", "KRW", "MXN", "RUB"
-Example: https://api.coinmarketcap.com/v1/ticker/
-Example: https://api.coinmarketcap.com/v1/ticker/?limit=10
-Example: https://api.coinmarketcap.com/v1/ticker/?convert=EUR&limit=10
-Sample Response:
-[
-	{
-		"id": "bitcoin",
-		"name": "Bitcoin",
-		"symbol": "BTC",
-		"rank": "1",
-		"price_usd": "573.137",
-		"price_btc": "1.0",
-		"24h_volume_usd": "72855700.0",
-		"market_cap_usd": "9080883500.0",
-		"available_supply": "15844176.0",
-		"total_supply": "15844176.0",
-		"percent_change_1h": "0.04",
-		"percent_change_24h": "-0.3",
-		"percent_change_7d": "-0.57",
-		"last_updated": "1472762067"
-	},
-	{
-		"id": "ethereum",
-		"name": "Ethereum",
-		"symbol": "ETH",
-		"rank": "2",
-		"price_usd": "12.1844",
-		"price_btc": "0.021262",
-		"24h_volume_usd": "24085900.0",
-		"market_cap_usd": "1018098455.0",
-		"available_supply": "83557537.0",
-		"total_supply": "83557537.0",
-		"percent_change_1h": "-0.58",
-		"percent_change_24h": "6.34",
-		"percent_change_7d": "8.59",
-		"last_updated": "1472762062"
-	},
-	...
-]
+  
 
 Ticker (Specific Currency)
 Endpoint: /ticker/{id}/
