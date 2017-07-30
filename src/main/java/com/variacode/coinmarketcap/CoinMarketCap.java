@@ -16,7 +16,7 @@ import java.net.URL;
 import java.util.Date;
 
 /**
- *
+ * Copyright (c) 2017 Miguel Fuentes Buchholtz. http://variacode.com
  * @author miguel@variacode.com
  */
 public class CoinMarketCap {

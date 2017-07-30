@@ -10,7 +10,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
+ * Copyright (c) 2017 Miguel Fuentes Buchholtz. http://variacode.com
  * @author miguel@variacode.com
  */
 public class CoinMarketCapTest {
