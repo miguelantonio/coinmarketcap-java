@@ -1,5 +1,6 @@
 package com.variacode.coinmarketcap;
 
+import java.util.Date;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -126,14 +127,31 @@ public class CoinMarketCapTest {
      * Test of getGlobal method, of class CoinMarketCap.
      */
     @Test
+    public void testGetGlobalConvert() throws Exception {
+        System.out.println("getGlobal Convert");
+        CoinMarketCap.Global result = instance.getGlobal(CoinMarketCap.CurrencyConvert.CNY);
+        assertNotNull(result);
+        assertNotNull(result.getActiveAssets());
+    }
+    
+    @Test
     public void testGetGlobal() throws Exception {
-        System.out.println("getGlobal");
-        CoinMarketCap instance = new CoinMarketCap();
-        CoinMarketCap.Global expResult = null;
-        CoinMarketCap.Global result = instance.getGlobal();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        System.out.println("getGlobal "+new Date());
+        CoinMarketCap.Global result = instance.getGlobal(null);
+        assertNotNull(result);
+        assertNotNull(result.getActiveAssets());
+    }
+    
+    @Test
+    public void testGetGlobal2() throws Exception {
+        System.out.println("getGlobal 2 testing throttle "+new Date());
+        CoinMarketCap.Global result = instance.getGlobal(null);
+        assertNotNull(result);
+        assertNotNull(result.getActiveAssets());
+        System.out.println("getGlobal 2 testing throttle "+new Date());
+        instance.getGlobal(null);
+        System.out.println("getGlobal 2 testing throttle "+new Date());
+        instance.getGlobal(null);
     }
 
 }

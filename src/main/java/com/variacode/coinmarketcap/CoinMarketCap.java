@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
+import java.util.Date;
 
 /**
  *
@@ -21,7 +21,17 @@ import java.util.concurrent.TimeUnit;
  */
 public class CoinMarketCap {
 
-    final RateLimiter rateLimiter = RateLimiter.create(10, 0, TimeUnit.MINUTES);
+    private final boolean throttle;
+
+    public CoinMarketCap() {
+        throttle = true;
+    }
+
+    public CoinMarketCap(boolean throttle) {
+        this.throttle = throttle;
+    }
+
+    RateLimiter rateLimiter = RateLimiter.create(0.033333);
 
     private final Gson gson = new Gson();
 
@@ -189,6 +199,72 @@ public class CoinMarketCap {
 
     public class Global {
 
+        @SerializedName("total_market_cap_usd")
+        @Expose
+        private BigDecimal totalMarketCapUsd;
+        @SerializedName("total_24h_volume_usd")
+        @Expose
+        private BigDecimal total24hVolumeUsd;
+        @SerializedName("bitcoin_percentage_of_market_cap")
+        @Expose
+        private BigDecimal bitcoinPercentageOfMarketCap;
+        @SerializedName("active_currencies")
+        @Expose
+        private Integer activeCurrencies;
+        @SerializedName("active_assets")
+        @Expose
+        private Integer activeAssets;
+        @SerializedName("active_markets")
+        @Expose
+        private Integer activeMarkets;
+
+        public BigDecimal getTotalMarketCapUsd() {
+            return totalMarketCapUsd;
+        }
+
+        public void setTotalMarketCapUsd(BigDecimal totalMarketCapUsd) {
+            this.totalMarketCapUsd = totalMarketCapUsd;
+        }
+
+        public BigDecimal getTotal24hVolumeUsd() {
+            return total24hVolumeUsd;
+        }
+
+        public void setTotal24hVolumeUsd(BigDecimal total24hVolumeUsd) {
+            this.total24hVolumeUsd = total24hVolumeUsd;
+        }
+
+        public BigDecimal getBitcoinPercentageOfMarketCap() {
+            return bitcoinPercentageOfMarketCap;
+        }
+
+        public void setBitcoinPercentageOfMarketCap(BigDecimal bitcoinPercentageOfMarketCap) {
+            this.bitcoinPercentageOfMarketCap = bitcoinPercentageOfMarketCap;
+        }
+
+        public Integer getActiveCurrencies() {
+            return activeCurrencies;
+        }
+
+        public void setActiveCurrencies(Integer activeCurrencies) {
+            this.activeCurrencies = activeCurrencies;
+        }
+
+        public Integer getActiveAssets() {
+            return activeAssets;
+        }
+
+        public void setActiveAssets(Integer activeAssets) {
+            this.activeAssets = activeAssets;
+        }
+
+        public Integer getActiveMarkets() {
+            return activeMarkets;
+        }
+
+        public void setActiveMarkets(Integer activeMarkets) {
+            this.activeMarkets = activeMarkets;
+        }
     }
 
     private class Error {
@@ -206,8 +282,12 @@ public class CoinMarketCap {
 
     private String getJsonResponse(final String url) throws CoinMarketCapException {
 
+        System.out.println("RATE INIT " + new Date());
         //maybe waits globally
-        rateLimiter.acquire();
+        if (throttle) {
+            rateLimiter.acquire();
+        }
+        System.out.println("RATE CLOSe " + new Date());
 
         try {
             URL obj = new URL(url);
@@ -276,68 +356,9 @@ public class CoinMarketCap {
         return l.get(0);
     }
 
-    public Global getGlobal() throws CoinMarketCapException {
-        return null;
+    public Global getGlobal(final CurrencyConvert convert) throws CoinMarketCapException {
+        final String[][] params = {{"convert", (convert == null ? null : convert + "")}};
+        return gson.fromJson(getJsonResponse("https://api.coinmarketcap.com/v1/global/" + getParamSuffix(params)), Global.class);
     }
-    /*
-  
 
-Ticker (Specific Currency)
-Endpoint: /ticker/{id}/
-Method: GET
-Optional parameters:
-(string) convert - return price, 24h volume, and market cap in terms of another currency. Valid values are:
-"AUD", "BRL", "CAD", "CHF", "CNY", "EUR", "GBP", "HKD", "IDR", "INR", "JPY", "KRW", "MXN", "RUB"
-Example: https://api.coinmarketcap.com/v1/ticker/bitcoin/
-Example: https://api.coinmarketcap.com/v1/ticker/bitcoin/?convert=EUR
-Sample Response:
-[
-	{
-		"id": "bitcoin",
-		"name": "Bitcoin",
-		"symbol": "BTC",
-		"rank": "1",
-		"price_usd": "573.137",
-		"price_btc": "1.0",
-		"24h_volume_usd": "72855700.0",
-		"market_cap_usd": "9080883500.0",
-		"available_supply": "15844176.0",
-		"total_supply": "15844176.0",
-		"percent_change_1h": "0.04",
-		"percent_change_24h": "-0.3",
-		"percent_change_7d": "-0.57",
-		"last_updated": "1472762067"
-	}
-]
-Sample Error Response:
-{
-	"error": "id not found"
-}
-
-Global Data
-Endpoint: /global/
-Method: GET
-Optional parameters:
-(string) convert - return 24h volume, and market cap in terms of another currency. Valid values are:
-"AUD", "BRL", "CAD", "CHF", "CNY", "EUR", "GBP", "HKD", "IDR", "INR", "JPY", "KRW", "MXN", "RUB"
-Example: https://api.coinmarketcap.com/v1/global/
-Example: https://api.coinmarketcap.com/v1/global/?convert=EUR
-Sample Response:
-{
-	"total_market_cap_usd": 12756692479.0,
-	"total_24h_volume_usd": 135078435.0,
-	"bitcoin_percentage_of_market_cap": 83.34,
-	"active_currencies": 653,
-	"active_assets": 59,
-	"active_markets": 1995
-}
-
-Limits
-Please limit requests to no more than 10 per minute.
-Endpoints update every 5 minutes.
-Documentation Last Updated
-March 15th, 2017
-Questions?
-Please fill out the request form.
-     */
 }
