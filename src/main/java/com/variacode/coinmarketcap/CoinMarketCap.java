@@ -336,6 +336,10 @@ public class CoinMarketCap {
         }
 
     }
+    
+    public List<Ticker> getTicker() throws CoinMarketCapException{
+        return getTicker(null, null);
+    }
 
     public List<Ticker> getTicker(final Integer limit, final CurrencyConvert convert) throws CoinMarketCapException {
         final String[][] params = {{"limit", (limit == null ? null : limit + "")}, {"convert", (convert == null ? null : convert + "")}};
@@ -355,10 +359,18 @@ public class CoinMarketCap {
         }
         return l.get(0);
     }
+    
+    public Ticker getTickerById(final String id) throws CoinMarketCapException{
+        return getTickerById(id, null);
+    }
 
     public Global getGlobal(final CurrencyConvert convert) throws CoinMarketCapException {
         final String[][] params = {{"convert", (convert == null ? null : convert + "")}};
         return gson.fromJson(getJsonResponse("https://api.coinmarketcap.com/v1/global/" + getParamSuffix(params)), Global.class);
+    }
+    
+    public Global getGlobal() throws CoinMarketCapException{
+        return getGlobal(null);
     }
 
 }
